@@ -22,12 +22,12 @@ import {
   Dashboard,
   Add,
   Search,
-  Community,
+  Group,
   Person,
   Notifications,
   Settings,
   Logout,
-  EcoOutlined,
+  Park,  // ✅ Changed from Nature/EcoOutlined to Park (exists!)
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -46,8 +46,8 @@ const MainLayout = ({ children }) => {
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
     { text: 'Find Food', icon: <Search />, path: '/browse' },
     { text: 'Share Food', icon: <Add />, path: '/create-listing' },
-    { text: 'Community', icon: <Community />, path: '/community' },
-    { text: 'My Impact', icon: <EcoOutlined />, path: '/impact' },
+    { text: 'Community', icon: <Group />, path: '/community' },
+    { text: 'My Impact', icon: <Park />, path: '/impact' },  // ✅ Using Park icon
     { text: 'Profile', icon: <Person />, path: '/profile' },
   ];
 

@@ -13,15 +13,18 @@ import {
   Paper,
 } from '@mui/material';
 import {
-  EcoOutlined,
+  Nature,
   LocationOn,
   Group,
   TrendingUp,
   Restaurant,
   Favorite,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+
   const features = [
     {
       icon: <LocationOn />,
@@ -29,7 +32,7 @@ const LandingPage = () => {
       description: 'Find food near you with AI-powered location matching',
     },
     {
-      icon: <EcoOutlined />,
+      icon: <Nature />,
       title: 'Reduce Food Waste',
       description: 'Help save the environment by sharing surplus food',
     },
@@ -54,7 +57,6 @@ const LandingPage = () => {
       location: 'Koramangala, Bangalore',
       freshness: 95,
       donor: 'Priya',
-      image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400&h=300&fit=crop'
     },
     {
       id: '2',
@@ -64,7 +66,6 @@ const LandingPage = () => {
       location: 'Indiranagar, Bangalore',
       freshness: 88,
       donor: 'Rahul',
-      image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=300&fit=crop'
     },
     {
       id: '3',
@@ -74,7 +75,6 @@ const LandingPage = () => {
       location: 'Whitefield, Bangalore',
       freshness: 92,
       donor: 'Anita',
-      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop'
     },
   ];
 
@@ -104,6 +104,7 @@ const LandingPage = () => {
             <Button
               variant="contained"
               size="large"
+              onClick={() => navigate('/create-listing')}
               sx={{
                 bgcolor: 'white',
                 color: 'primary.main',
@@ -117,6 +118,7 @@ const LandingPage = () => {
             <Button
               variant="outlined"
               size="large"
+              onClick={() => navigate('/browse')}
               sx={{
                 borderColor: 'white',
                 color: 'white',
@@ -162,7 +164,7 @@ const LandingPage = () => {
       </Container>
 
       {/* Features Section */}
-      <Box sx={{ bgcolor: 'background.default', py: 8 }}>
+      <Box sx={{ bgcolor: '#f5f5f5', py: 8 }}>
         <Container maxWidth="lg">
           <Typography variant="h4" textAlign="center" gutterBottom>
             Why Choose FoodShare?
@@ -212,12 +214,17 @@ const LandingPage = () => {
           {sampleListings.map((listing) => (
             <Grid item xs={12} sm={6} md={4} key={listing.id}>
               <Card sx={{ height: '100%' }}>
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={listing.image}
-                  alt={listing.title}
-                />
+                <Box
+                  sx={{
+                    height: 200,
+                    background: 'linear-gradient(45deg, #4CAF50 30%, #81C784 90%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Restaurant sx={{ fontSize: 60, color: 'white' }} />
+                </Box>
                 <CardContent>
                   <Box display="flex" justifyContent="space-between" alignItems="start" mb={1}>
                     <Typography variant="h6" component="div">
@@ -270,6 +277,7 @@ const LandingPage = () => {
           <Button
             variant="contained"
             size="large"
+            onClick={() => navigate('/dashboard')}
             sx={{
               bgcolor: 'white',
               color: 'primary.main',

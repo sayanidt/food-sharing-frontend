@@ -16,70 +16,51 @@ import {
 import {
   Add,
   Search,
-  EcoOutlined,
+  Nature,
   TrendingUp,
   LocationOn,
   Refresh,
+  Restaurant,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { useLocation } from '../../context/LocationContext';
-import apiService from '../../services/api';
-import MapView from '../../components/maps/MapView';
-import FoodListingCard from '../../components/ui/FoodListingCard';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { location: userLocation } = useLocation();
   const [nearbyListings, setNearbyListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
-    foodShared: 0,
-    foodReceived: 0,
-    carbonSaved: 0,
-    impactScore: 0,
+    foodShared: 12,
+    foodReceived: 8,
+    carbonSaved: 24.5,
+    impactScore: 85,
   });
 
+  // Mock nearby listings
   useEffect(() => {
-    fetchDashboardData();
-  }, [userLocation]);
-
-  const fetchDashboardData = async () => {
-    if (!userLocation) return;
-
-    try {
-      setLoading(true);
-      const listings = await apiService.getNearbyListings(
-        userLocation.longitude,
-        userLocation.latitude,
-        5000
-      );
-      setNearbyListings(listings);
-      
-      // Update stats from user data
-      if (user?.sustainability) {
-        setStats({
-          foodShared: user.sustainability.food_shared || 0,
-          foodReceived: user.sustainability.food_received || 0,
-          carbonSaved: user.sustainability.carbon_saved || 0,
-          impactScore: calculateImpactScore(user.sustainability),
-        });
+    setNearbyListings([
+      {
+        id: '1',
+        title: 'Fresh Homemade Pasta',
+        category: 'meals',
+        quantity: '4 servings',
+        location: { address: 'Koramangala, Bangalore' },
+        ai_predictions: { freshness_score: 95, demand_prediction: 0.8 },
+        donor: { name: 'Priya', reputation: { rating: 4.8 } },
+      },
+      {
+        id: '2',
+        title: 'Organic Vegetables',
+        category: 'vegetables',
+        quantity: '2kg mixed',
+        location: { address: 'Indiranagar, Bangalore' },
+        ai_predictions: { freshness_score: 88, demand_prediction: 0.6 },
+        donor: { name: 'Rahul', reputation: { rating: 4.5 } },
       }
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateImpactScore = (sustainability) => {
-    const { food_shared = 0, carbon_saved = 0 } = sustainability;
-    return Math.min(100, Math.round((food_shared * 10 + carbon_saved * 2) / 10));
-  };
+    ]);
+  }, []);
 
   const QuickActionCard = ({ title, description, icon, onClick, color = 'primary' }) => (
-    <Card sx={{ cursor: 'pointer', transition: 'all 0.2s' }} onClick={onClick}>
+    <Card sx={{ cursor: 'pointer', transition: 'all 0.2s', height: '100%' }} onClick={onClick}>
       <CardContent sx={{ textAlign: 'center', py: 3 }}>
         <Avatar sx={{ bgcolor: `${color}.light`, mx: 'auto', mb: 2, width: 56, height: 56 }}>
           {icon}
@@ -95,7 +76,7 @@ const DashboardPage = () => {
   );
 
   const StatCard = ({ title, value, subtitle, progress, color = 'primary' }) => (
-    <Paper sx={{ p: 3, textAlign: 'center' }}>
+    <Paper sx={{ p: 3, textAlign: 'center', height: '100%' }}>
       <Typography variant="h3" color={`${color}.main`} gutterBottom>
         {value}
       </Typography>
@@ -115,18 +96,67 @@ const DashboardPage = () => {
     </Paper>
   );
 
+  // Simple Food Card (inline component - no external dependencies)
+  const SimpleFoodCard = ({ listing }) => (
+    <Card>
+      <Box
+        sx={{
+          height: 120,
+          background: 'linear-gradient(45deg, #4CAF50 30%, #81C784 90%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Restaurant sx={{ fontSize: 50, color: 'white' }} />
+      </Box>
+      <CardContent>
+        <Box display="flex" justifyContent="space-between" alignItems="start" mb={1}>
+          <Typography variant="h6">{listing.title}</Typography>
+          <Chip 
+            label={`${listing.ai_predictions.freshness_score}% fresh`} 
+            color="success" 
+            size="small" 
+          />
+        </Box>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          {listing.quantity} • {listing.category}
+        </Typography>
+        <Box display="flex" alignItems="center" gap={1} mb={2}>
+          <LocationOn fontSize="small" color="action" />
+          <Typography variant="body2" color="text.secondary">
+            {listing.location.address}
+          </Typography>
+        </Box>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Box display="flex" alignItems="center" gap={1}>
+            <Avatar sx={{ width: 24, height: 24, fontSize: '12px' }}>
+              {listing.donor.name.charAt(0)}
+            </Avatar>
+            <Typography variant="body2">
+              {listing.donor.name} (★ {listing.donor.reputation.rating})
+            </Typography>
+          </Box>
+          <Button size="small" variant="contained">
+            Claim
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Box>
           <Typography variant="h4" gutterBottom>
-            Welcome back, {user?.name}! 👋
+            Welcome back! 👋
           </Typography>
           <Typography variant="body1" color="text.secondary">
             Continue your journey of reducing food waste
           </Typography>
         </Box>
-        <IconButton onClick={fetchDashboardData} disabled={loading}>
+        <IconButton onClick={() => setLoading(!loading)}>
           <Refresh />
         </IconButton>
       </Box>
@@ -198,7 +228,7 @@ const DashboardPage = () => {
           <QuickActionCard
             title="View Impact"
             description="Track your contribution"
-            icon={<EcoOutlined />}
+            icon={<Nature />}
             onClick={() => navigate('/impact')}
             color="warning"
           />
@@ -213,77 +243,28 @@ const DashboardPage = () => {
           />
         </Grid>
 
-        {/* Map View */}
-        <Grid item xs={12} lg={8}>
-          <Paper sx={{ p: 2 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Typography variant="h6">
-                Food Available Near You
-              </Typography>
-              <Chip
-                icon={<LocationOn />}
-                label={`${nearbyListings.length} items found`}
-                color="primary"
-                variant="outlined"
-              />
-            </Box>
-            <Box height="400px">
-              <MapView
-                listings={nearbyListings}
-                userLocation={userLocation}
-                onListingClick={(listing) => navigate(`/food/${listing.id}`)}
-              />
-            </Box>
-          </Paper>
-        </Grid>
-
         {/* Recent Listings */}
-        <Grid item xs={12} lg={4}>
-          <Paper sx={{ p: 2, height: '460px', overflow: 'auto' }}>
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Recent Listings
+              Recent Food Near You ({nearbyListings.length} items)
             </Typography>
             {loading ? (
-              <Box display="flex" justifyContent="center" py={4}>
-                <LinearProgress sx={{ width: '100%' }} />
-              </Box>
-            ) : nearbyListings.length > 0 ? (
-              nearbyListings.slice(0, 3).map((listing) => (
-                <FoodListingCard
-                  key={listing.id}
-                  listing={listing}
-                  compact
-                  onClaim={(listing) => handleClaimFood(listing)}
-                  onContact={(phone) => window.open(`tel:${phone}`)}
-                />
-              ))
+              <LinearProgress sx={{ my: 2 }} />
             ) : (
-              <Typography variant="body2" color="text.secondary" textAlign="center" py={4}>
-                No food listings found nearby
-              </Typography>
+              <Grid container spacing={2}>
+                {nearbyListings.map((listing) => (
+                  <Grid item xs={12} md={6} key={listing.id}>
+                    <SimpleFoodCard listing={listing} />
+                  </Grid>
+                ))}
+              </Grid>
             )}
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => navigate('/browse')}
-              sx={{ mt: 2 }}
-            >
-              View All
-            </Button>
           </Paper>
         </Grid>
       </Grid>
     </Container>
   );
-
-  async function handleClaimFood(listing) {
-    try {
-      await apiService.claimFoodListing(listing.id);
-      fetchDashboardData(); // Refresh data
-    } catch (error) {
-      console.error('Failed to claim food:', error);
-    }
-  }
 };
 
 export default DashboardPage;

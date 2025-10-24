@@ -2,11 +2,18 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import Navigation from './components/Navigation';
+import { AuthProvider } from './context/AuthContext';
+import { LocationProvider } from './context/LocationContext';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import MainLayout from './components/layout/MainLayout';
+
+// Pages
 import LandingPage from './pages/LandingPage';
-import DashboardPage from './pages/DashboardPage';  // Use the advanced one
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
+import CreateListingPage from './pages/food/CreateListingPage';
 import Browse from './pages/Browse';
-import CreateListing from './pages/CreateListing';
 
 const theme = createTheme({
   palette: {
@@ -20,14 +27,48 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/dashboard" element={<><Navigation /><DashboardPage /></>} />
-          <Route path="/browse" element={<><Navigation /><Browse /></>} />
-          <Route path="/create-listing" element={<><Navigation /><CreateListing /></>} />
-          <Route path="/impact" element={<><Navigation /><div style={{padding: '20px'}}><h2>🌱 Impact Page Coming Soon!</h2></div></>} />
-          <Route path="/community" element={<><Navigation /><div style={{padding: '20px'}}><h2>👥 Community Page Coming Soon!</h2></div></>} />
-        </Routes>
+        <AuthProvider>
+          <LocationProvider>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+
+              {/* Protected Routes with Layout */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <DashboardPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/browse"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <Browse />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/create-listing"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <CreateListingPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </LocationProvider>
+        </AuthProvider>
       </Router>
     </ThemeProvider>
   );
