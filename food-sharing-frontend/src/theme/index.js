@@ -6,22 +6,11 @@ const theme = createTheme({
       main: '#4CAF50', // Green for sustainability
       light: '#81C784',
       dark: '#388E3C',
-      contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#FF9800', // Orange for urgency/freshness
+      main: '#FF9800', // Orange for urgency
       light: '#FFB74D',
       dark: '#F57C00',
-      contrastText: '#FFFFFF',
-    },
-    success: {
-      main: '#66BB6A',
-    },
-    warning: {
-      main: '#FFA726',
-    },
-    error: {
-      main: '#EF5350',
     },
     background: {
       default: '#F5F5F5',
@@ -30,28 +19,10 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontSize: '2.5rem',
-      fontWeight: 600,
-    },
-    h2: {
-      fontSize: '2rem',
-      fontWeight: 600,
-    },
-    h3: {
-      fontSize: '1.75rem',
-      fontWeight: 500,
-    },
     h4: {
-      fontSize: '1.5rem',
-      fontWeight: 500,
+      fontWeight: 600,
     },
     h5: {
-      fontSize: '1.25rem',
-      fontWeight: 500,
-    },
-    h6: {
-      fontSize: '1rem',
       fontWeight: 500,
     },
   },
