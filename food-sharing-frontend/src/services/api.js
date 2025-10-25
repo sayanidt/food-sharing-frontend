@@ -54,6 +54,30 @@ class APIService {
       }, 1000);
     });
   }
+
+  // Register a new user
+  // Expects the backend to accept the payload described in the app UI and return
+  // an object containing { user, access_token, token_type } on success.
+  async register(userData) {
+    try {
+      const response = await this.api.post('/auth/register', userData);
+      return response.data;
+    } catch (error) {
+      // Re-throw so callers can inspect error.response / error.message
+      throw error;
+    }
+  }
+
+  // Login user
+  // Expects { email, password } and returns { access_token, token_type, user }
+  async login(credentials) {
+    try {
+      const response = await this.api.post('/auth/login', credentials);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default new APIService();

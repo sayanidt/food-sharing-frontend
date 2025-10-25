@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import apiService from '../services/api';
 
 const AuthContext = createContext();
 
@@ -27,40 +28,53 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // In real app, call API: const response = await apiService.login(email, password);
-      console.log('Login:', email, password);
-      
-      const userData = { 
-        name: 'Demo User', 
-        email, 
-        role: 'both' // This will come from API response
-      };
-      
-      localStorage.setItem('access_token', 'demo-token');
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
+      // Call real API service. The API is expected to return an object like:
+      // { access_token: '...', token_type: 'bearer', user: { ... } }
+      const data = await apiService.login({ email, password });
+
+      const token = data.access_token || data.token || data.accessToken;
+      const userFromResponse = data.user || data;
+
+      if (token) {
+        localStorage.setItem('access_token', token);
+      }
+
+      if (userFromResponse) {
+        localStorage.setItem('user', JSON.stringify(userFromResponse));
+        setUser(userFromResponse);
+      }
+
       setIsAuthenticated(true);
+      return data;
     } catch (error) {
+      // Bubble up error so UI can show messages from error.response.data
       throw error;
     }
   };
 
   const register = async (userData) => {
     try {
-      // In real app, call API: const response = await apiService.register(userData);
-      console.log('Register:', userData);
-      
-      const newUser = { 
-        name: userData.name, 
-        email: userData.email,
-        role: userData.role // Save the role
-      };
-      
-      localStorage.setItem('access_token', 'demo-token');
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setUser(newUser);
+      // Call real API service. The API is expected to return an object similar to:
+      // { status: 'created', user: { ... }, access_token: '...', token_type: 'bearer' }
+      const data = await apiService.register(userData);
+
+      // Prefer explicit fields if present
+      const token = data.access_token || data.token || data.accessToken;
+      const userFromResponse = data.user || data;
+
+      if (token) {
+        localStorage.setItem('access_token', token);
+      }
+
+      if (userFromResponse) {
+        localStorage.setItem('user', JSON.stringify(userFromResponse));
+        setUser(userFromResponse);
+      }
+
       setIsAuthenticated(true);
+      return data;
     } catch (error) {
+      // Bubble up error so UI can show messages from error.response.data
       throw error;
     }
   };
