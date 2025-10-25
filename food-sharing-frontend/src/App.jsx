@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ConfigProvider } from 'antd';
 import CssBaseline from '@mui/material/CssBaseline';
+import { themeTokens } from './theme/colors';
 import { AuthProvider } from './context/AuthContext';
 import { LocationProvider } from './context/LocationContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -29,11 +31,12 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <AuthProvider>
-          <LocationProvider>
+    <ConfigProvider theme={{ token: themeTokens }}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Router>
+          <AuthProvider>
+            <LocationProvider>
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<LandingPage />} />
@@ -115,6 +118,7 @@ function App() {
         </AuthProvider>
       </Router>
     </ThemeProvider>
+  </ConfigProvider>
   );
 }
 
