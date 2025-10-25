@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import apiService from '../services/api';
 
 const AuthContext = createContext();
 
@@ -17,28 +16,30 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      if (apiService.isAuthenticated()) {
-        const userData = await apiService.getCurrentUser();
-        setUser(userData);
-        setIsAuthenticated(true);
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      apiService.logout();
-    } finally {
-      setLoading(false);
+    const token = localStorage.getItem('access_token');
+    const storedUser = localStorage.getItem('user');
+    if (token && storedUser) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(storedUser));
     }
-  };
+    setLoading(false);
+  }, []);
 
   const login = async (email, password) => {
     try {
-      await apiService.login(email, password);
-      await checkAuthStatus();
+      // In real app, call API: const response = await apiService.login(email, password);
+      console.log('Login:', email, password);
+      
+      const userData = { 
+        name: 'Demo User', 
+        email, 
+        role: 'both' // This will come from API response
+      };
+      
+      localStorage.setItem('access_token', 'demo-token');
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+      setIsAuthenticated(true);
     } catch (error) {
       throw error;
     }
@@ -46,15 +47,27 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      await apiService.register(userData);
-      await checkAuthStatus();
+      // In real app, call API: const response = await apiService.register(userData);
+      console.log('Register:', userData);
+      
+      const newUser = { 
+        name: userData.name, 
+        email: userData.email,
+        role: userData.role // Save the role
+      };
+      
+      localStorage.setItem('access_token', 'demo-token');
+      localStorage.setItem('user', JSON.stringify(newUser));
+      setUser(newUser);
+      setIsAuthenticated(true);
     } catch (error) {
       throw error;
     }
   };
 
   const logout = () => {
-    apiService.logout();
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
     setUser(null);
     setIsAuthenticated(false);
   };
@@ -66,12 +79,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    checkAuthStatus
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

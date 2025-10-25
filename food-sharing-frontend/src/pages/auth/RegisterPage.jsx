@@ -19,6 +19,7 @@ import {
   Stepper,
   Step,
   StepLabel,
+  alpha,
 } from '@mui/material';
 import {
   Person,
@@ -32,6 +33,17 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLocation } from '../../context/LocationContext';
+import { keyframes } from '@emotion/react';
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+`;
+
+const slideUp = keyframes`
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
 
 const steps = ['Basic Info', 'Location', 'Preferences'];
 
@@ -48,16 +60,7 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: '',
     role: 'both',
-    location: {
-      coordinates: [],
-      address: '',
-      pincode: '',
-    },
-    preferences: {
-      dietary: [],
-      allergies: [],
-      cuisines: [],
-    },
+    location: { coordinates: [], address: '', pincode: '' },
     acceptTerms: false,
   });
   
@@ -72,10 +75,7 @@ const RegisterPage = () => {
       const [parent, child] = name.split('.');
       setFormData(prev => ({
         ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: type === 'checkbox' ? checked : value,
-        },
+        [parent]: { ...prev[parent], [child]: type === 'checkbox' ? checked : value },
       }));
     } else {
       setFormData(prev => ({
@@ -106,9 +106,7 @@ const RegisterPage = () => {
     setActiveStep((prev) => prev + 1);
   };
 
-  const handleBack = () => {
-    setActiveStep((prev) => prev - 1);
-  };
+  const handleBack = () => setActiveStep((prev) => prev - 1);
 
   const validateBasicInfo = () => {
     if (!formData.name || !formData.email || !formData.phone || !formData.password) {
@@ -146,7 +144,14 @@ const RegisterPage = () => {
 
     try {
       await register(formData);
-      navigate('/dashboard');
+      
+      if (formData.role === 'donor') {
+        navigate('/donor-dashboard');
+      } else if (formData.role === 'receiver') {
+        navigate('/receiver-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       setError(error.response?.data?.message || 'Registration failed');
     } finally {
@@ -174,6 +179,7 @@ const RegisterPage = () => {
                   </InputAdornment>
                 ),
               }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: alpha('#fff', 0.8) } }}
             />
             <TextField
               fullWidth
@@ -191,6 +197,7 @@ const RegisterPage = () => {
                   </InputAdornment>
                 ),
               }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: alpha('#fff', 0.8) } }}
             />
             <TextField
               fullWidth
@@ -207,6 +214,7 @@ const RegisterPage = () => {
                   </InputAdornment>
                 ),
               }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: alpha('#fff', 0.8) } }}
             />
             <TextField
               fullWidth
@@ -225,15 +233,13 @@ const RegisterPage = () => {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),
               }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: alpha('#fff', 0.8) } }}
             />
             <TextField
               fullWidth
@@ -251,6 +257,7 @@ const RegisterPage = () => {
                   </InputAdornment>
                 ),
               }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: alpha('#fff', 0.8) } }}
             />
             <FormControl fullWidth margin="normal">
               <InputLabel>I want to</InputLabel>
@@ -259,9 +266,10 @@ const RegisterPage = () => {
                 value={formData.role}
                 onChange={handleChange}
                 label="I want to"
+                sx={{ borderRadius: 2, bgcolor: alpha('#fff', 0.8) }}
               >
-                <MenuItem value="donor">Only share food</MenuItem>
-                <MenuItem value="receiver">Only receive food</MenuItem>
+                <MenuItem value="donor">Only share food (Donor)</MenuItem>
+                <MenuItem value="receiver">Only receive food (Receiver)</MenuItem>
                 <MenuItem value="both">Both share and receive food</MenuItem>
               </Select>
             </FormControl>
@@ -270,16 +278,22 @@ const RegisterPage = () => {
       case 1:
         return (
           <Box>
-            <Box display="flex" alignItems="center" mb={2}>
-              <Button
-                variant="outlined"
-                onClick={handleLocationDetect}
-                startIcon={<LocationOn />}
-                sx={{ mb: 2 }}
-              >
-                Detect My Location
-              </Button>
-            </Box>
+            <Button
+              variant="outlined"
+              onClick={handleLocationDetect}
+              startIcon={<LocationOn />}
+              fullWidth
+              sx={{
+                mb: 2,
+                py: 1.5,
+                borderRadius: 2,
+                borderWidth: 2,
+                fontWeight: 700,
+                '&:hover': { borderWidth: 2 },
+              }}
+            >
+              Detect My Location
+            </Button>
             <TextField
               fullWidth
               label="Address"
@@ -290,6 +304,7 @@ const RegisterPage = () => {
               margin="normal"
               multiline
               rows={3}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: alpha('#fff', 0.8) } }}
             />
             <TextField
               fullWidth
@@ -298,25 +313,16 @@ const RegisterPage = () => {
               value={formData.location.pincode}
               onChange={handleChange}
               margin="normal"
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: alpha('#fff', 0.8) } }}
             />
           </Box>
         );
       case 2:
         return (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Dietary Preferences (Optional)
+            <Typography variant="h6" gutterBottom fontWeight={700}>
+              Terms & Conditions
             </Typography>
-            <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
-              {['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free'].map((pref) => (
-                <FormControlLabel
-                  key={pref}
-                  control={<Checkbox />}
-                  label={pref}
-                />
-              ))}
-            </Box>
-            
             <FormControlLabel
               control={
                 <Checkbox
@@ -327,6 +333,7 @@ const RegisterPage = () => {
               }
               label="I accept the terms and conditions and privacy policy"
               required
+              sx={{ mt: 2 }}
             />
           </Box>
         );
@@ -336,25 +343,60 @@ const RegisterPage = () => {
   };
 
   return (
-    <Container component="main" maxWidth="sm">
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        py: 4,
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Animated Background */}
       <Box
         sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
+          position: 'absolute',
+          top: '20%',
+          right: '10%',
+          width: 400,
+          height: 400,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(76,175,80,0.2) 0%, transparent 70%)',
+          animation: `${float} 6s ease-in-out infinite`,
         }}
-      >
-        <Paper elevation={6} sx={{ p: 4, width: '100%', borderRadius: 2 }}>
-          <Box textAlign="center" mb={3}>
-            <Typography variant="h3" component="h1" color="primary" gutterBottom>
-              🌱
-            </Typography>
-            <Typography variant="h4" component="h1" gutterBottom>
+      />
+
+      <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 5,
+            borderRadius: 4,
+            background: alpha('#fff', 0.95),
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+            animation: `${slideUp} 0.8s ease-out`,
+          }}
+        >
+          <Box textAlign="center" mb={4}>
+            <Typography variant="h2" sx={{ fontSize: '3rem', mb: 2 }}>🌱</Typography>
+            <Typography
+              variant="h4"
+              fontWeight={800}
+              gutterBottom
+              sx={{
+                background: 'linear-gradient(135deg, #1b5e20 0%, #66bb6a 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
               Join FoodShare
             </Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Typography variant="body1" color="text.secondary" fontWeight={500}>
               Start your journey of reducing food waste
             </Typography>
           </Box>
@@ -368,7 +410,7 @@ const RegisterPage = () => {
           </Stepper>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
               {error}
             </Alert>
           )}
@@ -380,6 +422,7 @@ const RegisterPage = () => {
               <Button
                 onClick={handleBack}
                 disabled={activeStep === 0}
+                sx={{ borderRadius: 2 }}
               >
                 Back
               </Button>
@@ -389,6 +432,17 @@ const RegisterPage = () => {
                   type="submit"
                   variant="contained"
                   disabled={loading}
+                  sx={{
+                    px: 4,
+                    py: 1.2,
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)',
+                    boxShadow: '0 8px 24px rgba(46,125,50,0.4)',
+                    '&:hover': {
+                      boxShadow: '0 12px 36px rgba(46,125,50,0.6)',
+                    },
+                  }}
                 >
                   {loading ? 'Creating Account...' : 'Create Account'}
                 </Button>
@@ -396,6 +450,13 @@ const RegisterPage = () => {
                 <Button
                   variant="contained"
                   onClick={handleNext}
+                  sx={{
+                    px: 4,
+                    py: 1.2,
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)',
+                  }}
                 >
                   Next
                 </Button>
@@ -404,16 +465,25 @@ const RegisterPage = () => {
           </form>
 
           <Box textAlign="center" mt={3}>
-            <Typography variant="body2">
+            <Typography variant="body2" color="text.secondary">
               Already have an account?{' '}
-              <Link component={RouterLink} to="/login" color="primary">
+              <Link
+                component={RouterLink}
+                to="/login"
+                sx={{
+                  color: 'primary.main',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
                 Sign in
               </Link>
             </Typography>
           </Box>
         </Paper>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

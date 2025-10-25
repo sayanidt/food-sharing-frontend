@@ -1,103 +1,158 @@
 import React, { useState } from 'react';
 import {
   Container,
-  Paper,
-  Box,
   TextField,
   Button,
   Typography,
+  Box,
+  Paper,
   Link,
   Alert,
   InputAdornment,
   IconButton,
-  Divider,
+  alpha,
 } from '@mui/material';
-import {
-  Email,
-  Lock,
-  Visibility,
-  VisibilityOff,
-  Google,
-  Facebook,
-} from '@mui/icons-material';
-import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { keyframes } from '@emotion/react';
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+`;
+
+const slideUp = keyframes`
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
-
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const from = location.state?.from?.pathname || '/dashboard';
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    if (error) setError('');
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      navigate(from, { replace: true });
+      await login(email, password);
+      const userRole = JSON.parse(localStorage.getItem('user'))?.role;
+      
+      if (userRole === 'donor') {
+        navigate('/donor-dashboard');
+      } else if (userRole === 'receiver') {
+        navigate('/receiver-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
-      setError(error.response?.data?.detail || 'Login failed');
+      setError('Invalid email or password');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container component="main" maxWidth="sm">
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Animated Background */}
       <Box
         sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          position: 'absolute',
+          top: '20%',
+          right: '10%',
+          width: 400,
+          height: 400,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(76,175,80,0.2) 0%, transparent 70%)',
+          animation: `${float} 6s ease-in-out infinite`,
         }}
-      >
-        <Paper elevation={6} sx={{ p: 4, width: '100%', borderRadius: 2 }}>
-          <Box textAlign="center" mb={3}>
-            <Typography variant="h3" component="h1" color="primary" gutterBottom>
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: '10%',
+          left: '5%',
+          width: 300,
+          height: 300,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(139,195,74,0.2) 0%, transparent 70%)',
+          animation: `${float} 8s ease-in-out infinite`,
+          animationDelay: '1s',
+        }}
+      />
+
+      <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 5,
+            borderRadius: 4,
+            background: alpha('#fff', 0.95),
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+            animation: `${slideUp} 0.8s ease-out`,
+          }}
+        >
+          <Box textAlign="center" mb={4}>
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: '3rem',
+                mb: 2,
+              }}
+            >
               🌱
             </Typography>
-            <Typography variant="h4" component="h1" gutterBottom>
+            <Typography
+              variant="h4"
+              fontWeight={800}
+              gutterBottom
+              sx={{
+                background: 'linear-gradient(135deg, #1b5e20 0%, #66bb6a 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
               Welcome Back
             </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Continue your journey of reducing food waste
+            <Typography variant="body1" color="text.secondary" fontWeight={500}>
+              Sign in to continue sharing food
             </Typography>
           </Box>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
               {error}
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit}>
+          <Box component="form" onSubmit={handleSubmit}>
             <TextField
               fullWidth
               label="Email"
-              name="email"
               type="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               margin="normal"
               InputProps={{
@@ -107,15 +162,19 @@ const LoginPage = () => {
                   </InputAdornment>
                 ),
               }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  bgcolor: alpha('#fff', 0.8),
+                },
+              }}
             />
-
             <TextField
               fullWidth
               label="Password"
-              name="password"
               type={showPassword ? 'text' : 'password'}
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               margin="normal"
               InputProps={{
@@ -135,58 +194,59 @@ const LoginPage = () => {
                   </InputAdornment>
                 ),
               }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  bgcolor: alpha('#fff', 0.8),
+                },
+              }}
             />
-
+            
             <Button
               type="submit"
-              fullWidth
               variant="contained"
+              fullWidth
               size="large"
               disabled={loading}
-              sx={{ mt: 3, mb: 2, py: 1.5 }}
+              sx={{
+                mt: 4,
+                py: 1.8,
+                borderRadius: 2,
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)',
+                boxShadow: '0 8px 24px rgba(46,125,50,0.4)',
+                '&:hover': {
+                  boxShadow: '0 12px 36px rgba(46,125,50,0.6)',
+                  transform: 'translateY(-2px)',
+                },
+                transition: 'all 0.3s',
+              }}
             >
               {loading ? 'Signing In...' : 'Sign In'}
-            </Button>
-          </form>
-
-          <Divider sx={{ my: 3 }}>or</Divider>
-
-          <Box display="flex" flexDirection="column" gap={2}>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<Google />}
-              sx={{ py: 1.5 }}
-            >
-              Continue with Google
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<Facebook />}
-              sx={{ py: 1.5 }}
-            >
-              Continue with Facebook
             </Button>
           </Box>
 
           <Box textAlign="center" mt={3}>
-            <Typography variant="body2">
+            <Typography variant="body2" color="text.secondary">
               Don't have an account?{' '}
-              <Link component={RouterLink} to="/register" color="primary">
+              <Link
+                component={RouterLink}
+                to="/register"
+                sx={{
+                  color: 'primary.main',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
                 Sign up
               </Link>
             </Typography>
           </Box>
-
-          <Box textAlign="center" mt={1}>
-            <Link href="#" color="primary" variant="body2">
-              Forgot your password?
-            </Link>
-          </Box>
         </Paper>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 
